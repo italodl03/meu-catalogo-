@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor WhatsApp HTML - Personalize e Copie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a2a32;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            color: #cbd5e1;
+            margin-top: 8px;
+        }
+
+        .editor-card {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.3);
+            overflow: hidden;
+            padding: 28px 30px;
+            margin-bottom: 25px;
+        }
+
+        .two-columns {
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #0b2b26;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            border: 1px solid #d1d9e6;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            background: #fefefe;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #25D366;
+            box-shadow: 0 0 0 3px #25d36640;
+        }
+
+        .html-code-area {
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            height: 320px;
+            resize: vertical;
+            background: #f8fafc;
+        }
+
+        .msg-textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+            justify-content: center;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #eef2ff;
+            color: #1f2a44;
+        }
+
+        .btn-primary {
+            background: #25D366;
+            color: white;
+            box-shadow: 0 4px 8px rgba(37,211,102,0.3);
+        }
+
+        .btn-primary:hover {
+            background: #1da959;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #1e293b;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172ad9;
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            z-index: 999;
+            transition: 0.2s;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+        }
+
+        hr {
+            margin: 20px 0;
+            border-color: #e2e8f0;
+        }
+
+        .info-tip {
+            background: #eef9ff;
+            padding: 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #075e54;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 760px) {
+            .editor-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>✏️ Editor WhatsApp HTML</h1>
+        <p>Cole o código do primeiro HTML → edite número e mensagem → copie o HTML modificado</p>
+    </div>
+
+    <div class="editor-card">
+        <div class="two-columns">
+            <div class="col">
+                <label>📄 1. Cole aqui o código do PRIMEIRO HTML (whatsapp_sender.html):</label>
+                <textarea id="htmlSource" class="html-code-area" placeholder="Cole o HTML completo com as variáveis phoneNumber e textMessage..."></textarea>
+                <div class="info-tip" style="margin-top: 12px;">
+                    ⚡ Dica: O HTML deve conter as linhas:<br>
+                    <code>let phoneNumber = "5511999999999";</code><br>
+                    <code>let textMessage = "Olá...";</code><br>
+                    O editor irá substituir esses valores automaticamente.
+                </div>
+            </div>
+            <div class="col">
+                <label>📞 Novo Número (WhatsApp com DDI, ex: 5511999999999):</label>
+                <input type="text" id="newPhone" placeholder="5511999999999" value="5511988887777">
+                
+                <label style="margin-top: 20px;">💬 Nova Mensagem:</label>
+                <textarea id="newMessage" class="msg-textarea" placeholder="Digite a mensagem que será enviada">Olá! Isso é um teste com HTML personalizado via editor.</textarea>
+                
+                <div class="action-buttons">
+                    <button id="copyBtn" class="btn btn-primary">📋 Copiar HTML Modificado</button>
+                    <button id="loadExampleBtn" class="btn btn-secondary">🔄 Carregar Exemplo (HTML padrão)</button>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div style="font-size: 0.75rem; text-align: center; color: #2c6e5c;">
+            ✅ Ao clicar em "Copiar HTML Modificado", o código será atualizado com o novo número/mensagem e copiado para a área de transferência.
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast-msg">✅ HTML modificado copiado!</div>
+
+<script>
+    // Função para escapar string de forma segura para JavaScript (entre aspas duplas)
+    function escapeJSString(str) {
+        if (typeof str !== 'string') str = String(str);
+        return str
+            .replace(/\\/g, '\\\\')   // barra invertida
+            .replace(/"/g, '\\"')      // aspas duplas
+            .replace(/\n/g, '\\n')     // quebra de linha
+            .replace(/\r/g, '\\r')     // carriage return
+            .replace(/\t/g, '\\t')     // tab
+            .replace(/\f/g, '\\f');
+    }
+
+    // Gera o HTML modificado (substituindo número e mensagem)
+    function generateModifiedHTML(originalHTML, newNumber, newMessage) {
+        if (!originalHTML || originalHTML.trim() === "") {
+            alert("❌ Por favor, cole o HTML do primeiro arquivo na caixa de texto.");
+            return null;
+        }
+
+        // Escapa os novos valores para uso dentro de string JS
+        let safeNumber = escapeJSString(newNumber);
+        let safeMessage = escapeJSString(newMessage);
+
+        // Padrões para substituir a declaração do número (suporta let ou var)
+        // Exemplo: let phoneNumber = "5511999999999";  ou var phoneNumber = "..."
+        const phoneRegex = /(let|var)\s+phoneNumber\s*=\s*"([^"]*)"/;
+        const messageRegex = /(let|var)\s+textMessage\s*=\s*"([^"]*)"/;
+
+        let modified = originalHTML;
+
+        // Substituir número
+        if (phoneRegex.test(modified)) {
+            modified = modified.replace(phoneRegex, `$1 phoneNumber = "${safeNumber}"`);
+        } else {
+            // fallback: tenta encontrar qualquer atribuição de phoneNumber com aspas simples ou duplas
+            const fallbackPhone = /(let|var)\s+phoneNumber\s*=\s*["']([^"']*)["']/;
+            if (fallbackPhone.test(modified)) {
+                modified = modified.replace(fallbackPhone, `$1 phoneNumber = "${safeNumber}"`);
+            } else {
+                alert("⚠️ Atenção: não foi possível encontrar 'let phoneNumber = \"...\"' no código. Certifique-se de que o HTML contenha essa variável exata.");
+                return null;
+            }
+        }
+
+        // Substituir mensagem
+        if (messageRegex.test(modified)) {
+            modified = modified.replace(messageRegex, `$1 textMessage = "${safeMessage}"`);
+        } else {
+            const fallbackMsg = /(let|var)\s+textMessage\s*=\s*["']([^"']*)["']/;
+            if (fallbackMsg.test(modified)) {
+                modified = modified.replace(fallbackMsg, `$1 textMessage = "${safeMessage}"`);
+            } else {
+                alert("⚠️ Atenção: não foi possível encontrar 'let textMessage = \"...\"' no código. Verifique a estrutura.");
+                return null;
+            }
+        }
+
+        return modified;
+    }
+
+    // Copiar para área de transferência
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast("✅ HTML modificado copiado com sucesso!");
+            return true;
+        } catch (err) {
+            // fallback para browsers antigos
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast("✅ Copiado (método alternativo)");
+            return true;
+        }
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message || "✅ HTML modificado copiado!";
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2500);
+    }
+
+    // Ação principal: gerar e copiar
+    function handleGenerateAndCopy() {
+        const originalCode = document.getElementById('htmlSource').value;
+        const newPhone = document.getElementById('newPhone').value.trim();
+        const newMsg = document.getElementById('newMessage').value;
+
+        if (!originalCode) {
+            alert("❗ Caixa de código HTML vazia. Cole o primeiro HTML ou clique em 'Carregar Exemplo'.");
+            return;
+        }
+        if (!newPhone) {
+            alert("❗ Por favor, informe o número do WhatsApp (ex: 5511999999999).");
+            return;
+        }
+
+        const modifiedHTML = generateModifiedHTML(originalCode, newPhone, newMsg);
+        if (modifiedHTML) {
+            copyToClipboard(modifiedHTML);
+        }
+    }
+
+    // Carrega o HTML de exemplo (idêntico ao primeiro arquivo gerado)
+    function loadExampleHTML() {
+        // Este é o conteúdo do primeiro HTML (whatsapp_sender.html) com as variáveis padrão.
+        // Utilizamos template string para manter a formatação, escapando apenas o necessário.
+        const exampleHtml = `<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Enviar Mensagem WhatsApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #075e54 0%, #128c7e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+            max-width: 550px;
+            width: 100%;
+            padding: 32px 28px;
+            text-align: center;
+        }
+        .logo {
+            background: #25d36620;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+        }
+        .logo svg {
+            width: 48px;
+            height: 48px;
+            fill: #25D366;
+        }
+        h1 {
+            font-size: 1.9rem;
+            color: #075e54;
+            margin-bottom: 12px;
+        }
+        .sub {
+            color: #54656f;
+            margin-bottom: 28px;
+            border-bottom: 1px solid #e9edef;
+            padding-bottom: 16px;
+        }
+        .info-box {
+            background: #f0f2f4;
+            border-radius: 20px;
+            padding: 18px 20px;
+            text-align: left;
+            margin-bottom: 28px;
+        }
+        .info-item {
+            margin-bottom: 16px;
+        }
+        .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #3b4a54;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .value {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #111b21;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 14px;
+            font-family: monospace;
+        }
+        .btn-whatsapp {
+            background: #25D366;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 14px 20px;
+            border-radius: 60px;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .btn-whatsapp:hover {
+            background: #20b859;
+        }
+        .footer {
+            margin-top: 28px;
+            font-size: 0.7rem;
+            color: #8696a0;
+        }
+        hr {
+            margin: 15px 0;
+            border-top: 1px solid #eef2f4;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="logo">
+        <svg viewBox="0 0 24 24" width="48" height="48">
+            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.76.5 3.47 1.44 4.94L2 22l5.91-1.53c1.47.94 3.18 1.44 5.04 1.44 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zM12.04 20.7c-1.45 0-2.88-.39-4.12-1.12l-.3-.17-3.52.91.94-3.43-.18-.3c-.8-1.32-1.22-2.82-1.22-4.37 0-4.54 3.7-8.24 8.24-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.54-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.73-1.7-.81-.23-.09-.39-.12-.56.12-.17.24-.65.81-.8.98-.15.17-.3.19-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.12-.12.25-.31.38-.47.13-.16.17-.27.26-.45.09-.18.04-.34-.02-.48-.06-.14-.56-1.35-.77-1.85-.2-.49-.4-.42-.56-.43-.14-.01-.3-.01-.47-.01-.16 0-.41.06-.63.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.58.18 1.1.15 1.52.09.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.47-.28z"/>
+        </svg>
+    </div>
+    <h1>WhatsApp Direct</h1>
+    <div class="sub">Clique no botão e envie sua mensagem</div>
+    <div class="info-box">
+        <div class="info-item"><span class="label">📞 Número (com DDI)</span><div class="value" id="displayNumber">5511999999999</div></div>
+        <div class="info-item"><span class="label">💬 Mensagem pré-definida</span><div class="value" id="displayMessage">Olá! Gostaria de mais informações sobre seus produtos.</div></div>
+    </div>
+    <button class="btn-whatsapp" id="sendBtn"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.76.5 3.47 1.44 4.94L2 22l5.91-1.53c1.47.94 3.18 1.44 5.04 1.44 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zM12.04 20.7c-1.45 0-2.88-.39-4.12-1.12l-.3-.17-3.52.91.94-3.43-.18-.3c-.8-1.32-1.22-2.82-1.22-4.37 0-4.54 3.7-8.24 8.24-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.54-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.73-1.7-.81-.23-.09-.39-.12-.56.12-.17.24-.65.81-.8.98-.15.17-.3.19-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.12-.12.25-.31.38-.47.13-.16.17-.27.26-.45.09-.18.04-.34-.02-.48-.06-.14-.56-1.35-.77-1.85-.2-.49-.4-.42-.56-.43-.14-.01-.3-.01-.47-.01-.16 0-.41.06-.63.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.58.18 1.1.15 1.52.09.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.47-.28z"/></svg>Enviar via WhatsApp</button>
+    <hr /><div class="footer">🔁 Este HTML foi gerado/editado pelo segundo arquivo (editor)</div>
+</div>
+<script>
+    let phoneNumber = "5511999999999";
+    let textMessage = "Olá! Gostaria de mais informações sobre seus produtos.";
+    function updateDisplay() {
+        const dn = document.getElementById("displayNumber");
+        const dm = document.getElementById("displayMessage");
+        if(dn) dn.innerText = phoneNumber;
+        if(dm) dm.innerText = textMessage;
+    }
+    function sendWhatsApp() {
+        let cleanNumber = phoneNumber.toString().replace(/\\D/g, '');
+        if(cleanNumber === "") { alert("Número inválido"); return; }
+        const url = "https://wa.me/" + cleanNumber + "?text=" + encodeURIComponent(textMessage);
+        window.open(url, '_blank');
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        updateDisplay();
+        const btn = document.getElementById("sendBtn");
+        if(btn) btn.addEventListener("click", sendWhatsApp);
+    });
+<\/script>
+</body>
+</html>`;
+        document.getElementById('htmlSource').value = exampleHtml;
+        showToast("📋 Exemplo carregado! Agora edite número/mensagem e clique em copiar.");
+    }
+
+    // Eventos
+    document.getElementById('copyBtn').addEventListener('click', handleGenerateAndCopy);
+    document.getElementById('loadExampleBtn').addEventListener('click', loadExampleHTML);
+
+    // Dica: pré-carregar com exemplo para melhor experiência
+    window.addEventListener('DOMContentLoaded', () => {
+        // Opcional: deixar um placeholder inicial com uma pequena explicação, mas não obrigatório.
+        // Para facilitar, já mostramos um mini placeholder textual, mas o usuário pode carregar exemplo.
+        const textarea = document.getElementById('htmlSource');
+        textarea.placeholder = 'Clique em "Carregar Exemplo" para obter o modelo padrão, ou cole seu HTML aqui.';
+    });
+</script>
+</body>
+</html>
